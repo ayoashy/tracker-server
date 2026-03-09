@@ -59,52 +59,62 @@ async function scrapeAllGames() {
     await page.waitForSelector('.match-row', { timeout: 20000 });
 
     const games = await page.evaluate(() => {
-      const rows = document.querySelectorAll('.m-table-row.match-row.football-row');
+      const results = [];
 
-      return Array.from(rows).map((row) => {
-        // Teams
-        const homeTeam = row.querySelector('.home-team')?.textContent?.trim() || '';
-        const awayTeam = row.querySelector('.away-team')?.textContent?.trim() || '';
+      // Each .m-table.match-table groups rows under one league
+      const leagueTables = document.querySelectorAll('.m-table.match-table');
 
-        // Stable event ID from title attribute on .teams div
-        const teamsEl = row.querySelector('.teams');
-        const title = teamsEl?.getAttribute('title') || `${homeTeam} vs ${awayTeam}`;
-        const eventId = title.toLowerCase().replace(/\s+/g, '-');
+      leagueTables.forEach((table) => {
+        const league = table.querySelector('.league-row .league')?.textContent?.trim() || 'Unknown League';
+        const rows = table.querySelectorAll('.m-table-row.match-row.football-row');
 
-        // Clock: "67:14" → 67 min | "HT" → 45 | "45+2:00" → 47
-        const clockText = row.querySelector('.clock-time')?.textContent?.trim() || '0';
-        let minute = 0;
-        if (clockText === 'HT') {
-          minute = 45;
-        } else {
-          const base = clockText.split(':')[0]; // take only "67" from "67:14"
-          if (base.includes('+')) {
-            const [main, extra] = base.split('+');
-            minute = parseInt(main, 10) + parseInt(extra, 10);
+        rows.forEach((row) => {
+          // Teams
+          const homeTeam = row.querySelector('.home-team')?.textContent?.trim() || '';
+          const awayTeam = row.querySelector('.away-team')?.textContent?.trim() || '';
+
+          // Stable event ID from title attribute on .teams div
+          const teamsEl = row.querySelector('.teams');
+          const title = teamsEl?.getAttribute('title') || `${homeTeam} vs ${awayTeam}`;
+          const eventId = title.toLowerCase().replace(/\s+/g, '-');
+
+          // Clock: "67:14" → 67 min | "HT" → 45 | "45+2:00" → 47
+          const clockText = row.querySelector('.clock-time')?.textContent?.trim() || '0';
+          let minute = 0;
+          if (clockText === 'HT') {
+            minute = 45;
           } else {
-            minute = parseInt(base, 10) || 0;
+            const base = clockText.split(':')[0];
+            if (base.includes('+')) {
+              const [main, extra] = base.split('+');
+              minute = parseInt(main, 10) + parseInt(extra, 10);
+            } else {
+              minute = parseInt(base, 10) || 0;
+            }
           }
-        }
 
-        // Score: first .score-item = home, second = away
-        const scoreItems = row.querySelectorAll('.score .score-item');
-        const homeScore = parseInt(scoreItems[0]?.textContent?.trim() || '0', 10);
-        const awayScore = parseInt(scoreItems[1]?.textContent?.trim() || '0', 10);
+          // Score: first .score-item = home, second = away
+          const scoreItems = row.querySelectorAll('.score .score-item');
+          const homeScore = parseInt(scoreItems[0]?.textContent?.trim() || '0', 10);
+          const awayScore = parseInt(scoreItems[1]?.textContent?.trim() || '0', 10);
 
-        // Odds: always from the FIRST .m-market only (1X2 market)
-        const firstMarket = row.querySelector('.m-market');
-        const getOdds = (sel) => {
-          const text = firstMarket?.querySelector(sel)?.textContent?.trim();
-          const val = parseFloat(text);
-          return isNaN(val) ? null : val;
-        };
+          // Odds: always from the FIRST .m-market only (1X2 market)
+          const firstMarket = row.querySelector('.m-market');
+          const getOdds = (sel) => {
+            const text = firstMarket?.querySelector(sel)?.textContent?.trim();
+            const val = parseFloat(text);
+            return isNaN(val) ? null : val;
+          };
 
-        const homeOdd = getOdds('[data-op="desktop-outcome_0"] .m-outcome-odds');
-        const drawOdd = getOdds('[data-op="desktop-outcome_1"] .m-outcome-odds');
-        const awayOdd = getOdds('[data-op="desktop-outcome_2"] .m-outcome-odds');
+          const homeOdd = getOdds('[data-op="desktop-outcome_0"] .m-outcome-odds');
+          const drawOdd = getOdds('[data-op="desktop-outcome_1"] .m-outcome-odds');
+          const awayOdd = getOdds('[data-op="desktop-outcome_2"] .m-outcome-odds');
 
-        return { eventId, homeTeam, awayTeam, homeScore, awayScore, minute, homeOdd, drawOdd, awayOdd };
+          results.push({ eventId, homeTeam, awayTeam, homeScore, awayScore, minute, homeOdd, drawOdd, awayOdd, league });
+        });
       });
+
+      return results;
     });
 
     const valid = games.filter((g) => g.homeTeam && g.awayTeam);

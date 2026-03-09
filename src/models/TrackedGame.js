@@ -10,6 +10,7 @@ const trackedGameSchema = new mongoose.Schema({
   homeOdd: { type: Number, default: null },
   drawOdd: { type: Number, default: null },
   awayOdd: { type: Number, default: null },
+  league: { type: String, default: 'Unknown League' },
   firstTrackedAt: { type: Date, default: Date.now },
   lastSeenAt: { type: Date, default: Date.now },
 });
