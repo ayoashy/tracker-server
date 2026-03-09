@@ -2,8 +2,9 @@ const puppeteer = require('puppeteer');
 
 const LIVE_URL = 'https://www.sportybet.com/ng/sport/football/live_list';
 
-// Use system Chrome — more reliable than puppeteer's bundled Chromium on macOS
-const CHROME_PATH = process.env.CHROME_PATH || null
+// Local: set CHROME_PATH in .env to use system Chrome (faster on macOS)
+// Production (Render): leave unset — puppeteer uses its bundled Chrome downloaded by postinstall
+const CHROME_PATH = process.env.CHROME_PATH || undefined;
 
 // Filter criteria
 const MIN_MINUTE = 30;

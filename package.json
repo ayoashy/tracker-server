@@ -4,6 +4,7 @@
   "description": "Sports game tracker backend - SportyBet live game scraper",
   "main": "src/server.js",
   "scripts": {
+    "postinstall": "npx puppeteer browsers install chrome",
     "start": "node src/server.js",
     "dev": "nodemon src/server.js"
   },
