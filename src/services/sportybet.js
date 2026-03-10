@@ -2,10 +2,6 @@ const puppeteer = require('puppeteer');
 
 const LIVE_URL = 'https://www.sportybet.com/ng/sport/football/live_list';
 
-// Local: CHROME_PATH in .env points to system Chrome (faster on macOS)
-// Production: puppeteer.executablePath() returns the path to Chrome installed during build
-const CHROME_PATH = process.env.CHROME_PATH || puppeteer.executablePath();
-
 // Filter criteria
 const MIN_MINUTE = 30;
 const MIN_HOME_ODD = 1.40;
@@ -25,9 +21,12 @@ let pendingScrape = null;
 async function scrapeAllGames() {
   console.log('[Scraper] Launching browser...');
 
+  // Resolved here (not at module load) so a missing Chrome doesn't crash the server on startup
+  const executablePath = process.env.CHROME_PATH || puppeteer.executablePath();
+
   const browser = await puppeteer.launch({
     headless: true,
-    executablePath: CHROME_PATH,
+    executablePath,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
