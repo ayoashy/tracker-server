@@ -21,21 +21,33 @@ let pendingScrape = null;
 async function scrapeAllGames() {
   console.log('[Scraper] Launching browser...');
 
-  const executablePath = process.env.CHROME_PATH;
-  if (!executablePath) {
-    throw new Error('CHROME_PATH environment variable is not set. Set it to your Chrome/Chromium binary path.');
+  let executablePath;
+  let launchArgs = [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--no-first-run',
+  ];
+
+  if (process.env.CHROME_PATH) {
+    // Local dev: use system Chrome defined in .env
+    executablePath = process.env.CHROME_PATH;
+    console.log('[Scraper] Using system Chrome:', executablePath);
+  } else {
+    // Production (Render): use @sparticuz/chromium — no env var needed
+    const chromium = require('@sparticuz/chromium');
+    chromium.setHeadlessMode = true;
+    chromium.setGraphicsMode = false;
+    executablePath = await chromium.executablePath();
+    launchArgs = chromium.args;
+    console.log('[Scraper] Using @sparticuz/chromium:', executablePath);
   }
 
   const browser = await puppeteer.launch({
     headless: true,
     executablePath,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--no-first-run',
-    ],
+    args: launchArgs,
   });
 
   try {
