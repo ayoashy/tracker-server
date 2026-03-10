@@ -21,8 +21,10 @@ let pendingScrape = null;
 async function scrapeAllGames() {
   console.log('[Scraper] Launching browser...');
 
-  // Resolved here (not at module load) so a missing Chrome doesn't crash the server on startup
-  const executablePath = process.env.CHROME_PATH || puppeteer.executablePath();
+  const executablePath = process.env.CHROME_PATH;
+  if (!executablePath) {
+    throw new Error('CHROME_PATH environment variable is not set. Set it to your Chrome/Chromium binary path.');
+  }
 
   const browser = await puppeteer.launch({
     headless: true,
