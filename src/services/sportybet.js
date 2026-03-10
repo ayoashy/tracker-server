@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 
 const LIVE_URL = 'https://www.sportybet.com/ng/sport/football/live_list';
 
