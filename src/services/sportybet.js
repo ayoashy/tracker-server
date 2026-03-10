@@ -5,7 +5,7 @@ const LIVE_URL = 'https://www.sportybet.com/ng/sport/football/live_list';
 // Filter criteria
 const MIN_MINUTE = 30;
 const MIN_HOME_ODD = 1.40;
-const MAX_HOME_ODD = 2.5;
+const MAX_HOME_ODD = 1.95;
 const ALLOWED_SCORES = [
   { home: 0, away: 0 },
   { home: 1, away: 1 },
