@@ -2,14 +2,14 @@ const puppeteer = require('puppeteer');
 
 const LIVE_URL = 'https://www.sportybet.com/ng/sport/football/live_list';
 
-// Local: set CHROME_PATH in .env to use system Chrome (faster on macOS)
-// Production (Render): leave unset — puppeteer uses its bundled Chrome downloaded by postinstall
-const CHROME_PATH = process.env.CHROME_PATH || undefined;
+// Local: CHROME_PATH in .env points to system Chrome (faster on macOS)
+// Production: puppeteer.executablePath() returns the path to Chrome installed during build
+const CHROME_PATH = process.env.CHROME_PATH || puppeteer.executablePath();
 
 // Filter criteria
 const MIN_MINUTE = 30;
 const MIN_HOME_ODD = 1.40;
-const MAX_HOME_ODD = 1.95;
+const MAX_HOME_ODD = 2.5;
 const ALLOWED_SCORES = [
   { home: 0, away: 0 },
   { home: 1, away: 1 },
